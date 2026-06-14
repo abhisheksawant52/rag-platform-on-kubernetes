@@ -1,0 +1,7 @@
+flowchart LR
+U[User]-->I[Ingress]
+I-->A[FastAPI]
+A-->R[RAG Service]
+R-->V[Vector DB]
+G[ArgoCD]-->K[Kubernetes]
+P[Prometheus]-->D[Grafana]
