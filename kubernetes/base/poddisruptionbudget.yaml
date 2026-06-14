@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rag-platform
+  labels:
+    app: rag-platform
+spec:
+  minAvailable: 1        # at least 1 pod stays up during node drains / upgrades
+  selector:
+    matchLabels:
+      app: rag-platform
