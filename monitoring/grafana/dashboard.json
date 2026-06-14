@@ -1,1 +1,157 @@
-{"title":"RAG Platform"}
+{
+  "title": "RAG Platform",
+  "uid": "rag-platform-overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "tags": ["rag", "platform"],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(rag_request_total, namespace)",
+        "refresh": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(rag_request_total{namespace=~\"$namespace\"}[5m])) by (status)",
+          "legendFormat": "HTTP {{status}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "P50 / P95 / P99 Latency",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(rag_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(rag_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(rag_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error Rate (%)",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 * sum(rate(rag_request_total{namespace=~\"$namespace\", status=~\"5..\"}[5m])) / sum(rate(rag_request_total{namespace=~\"$namespace\"}[5m]))",
+          "legendFormat": "Error %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Active Requests",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "sum(rag_active_requests{namespace=~\"$namespace\"})",
+          "legendFormat": "Active"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "LLM P95 Latency",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(rag_llm_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "LLM p95"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 6,
+      "title": "Retrieval P95 Latency",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(rag_retrieval_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "Retrieval p95"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 7,
+      "title": "Avg Docs Retrieved",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(rag_retrieved_docs_count_sum[5m]) / rate(rag_retrieved_docs_count_count[5m])",
+          "legendFormat": "Avg docs"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Pod Replica Count",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_ready{deployment=\"rag-platform\"}",
+          "legendFormat": "Ready replicas"
+        },
+        {
+          "expr": "kube_deployment_spec_replicas{deployment=\"rag-platform\"}",
+          "legendFormat": "Desired replicas"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Container Memory Usage",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{pod=~\"rag-platform.*\", container=\"api\"} / 1024 / 1024",
+          "legendFormat": "{{ pod }} (MiB)"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "MiB" } }
+    }
+  ]
+}

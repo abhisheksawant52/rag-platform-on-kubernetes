@@ -2,3 +2,45 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: rag-platform
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/part-of: rag-platform
+  finalizers:
+    # Deleting the Application object will cascade-delete all managed resources
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/your-org/rag-platform-on-kubernetes.git
+    targetRevision: main
+    path: kubernetes/overlays/production
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rag-production
+
+  syncPolicy:
+    automated:
+      prune: true          # remove resources deleted from Git
+      selfHeal: true       # revert manual cluster changes
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health checks — ArgoCD will report Healthy only when all pass
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas    # ignore HPA-managed replica count

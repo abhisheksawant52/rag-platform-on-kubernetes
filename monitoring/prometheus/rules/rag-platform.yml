@@ -1,0 +1,75 @@
+groups:
+  - name: rag-platform
+    interval: 30s
+    rules:
+
+      # ---- Availability ----
+      - alert: RagPlatformDown
+        expr: up{job="rag-platform"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAG Platform pod is down"
+          description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} has been unreachable for > 1m."
+
+      - alert: RagPlatformHighErrorRate
+        expr: |
+          sum(rate(rag_request_total{status=~"5.."}[5m])) by (namespace)
+          /
+          sum(rate(rag_request_total[5m])) by (namespace)
+          > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold 5%) in {{ $labels.namespace }}."
+
+      # ---- Latency ----
+      - alert: RagHighP95Latency
+        expr: |
+          histogram_quantile(0.95, sum(rate(rag_request_duration_seconds_bucket[5m])) by (le, namespace))
+          > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 request latency above 5s"
+          description: "P95 latency is {{ $value | humanizeDuration }} in {{ $labels.namespace }}."
+
+      - alert: RagHighLLMLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(rag_llm_duration_seconds_bucket[5m])) by (le))
+          > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM P95 latency above 30s"
+          description: "LLM P95 response time is {{ $value | humanizeDuration }}."
+
+      # ---- Resources ----
+      - alert: RagHighMemoryUsage
+        expr: |
+          container_memory_working_set_bytes{pod=~"rag-platform.*", container="api"}
+          / container_spec_memory_limit_bytes{pod=~"rag-platform.*", container="api"}
+          > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAG container memory usage > 90%"
+          description: "Pod {{ $labels.pod }} memory is at {{ $value | humanizePercentage }}."
+
+      # ---- HPA ----
+      - alert: RagHPAMaxReplicas
+        expr: |
+          kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="rag-platform"}
+          == kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="rag-platform"}
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HPA at maximum replicas"
+          description: "RAG Platform HPA has been at max replicas for 10m — consider increasing maxReplicas."
