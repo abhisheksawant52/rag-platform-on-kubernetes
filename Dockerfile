@@ -3,7 +3,7 @@
 # Produces image: ghcr.io/your-org/rag-platform (see helm/values.yaml).
 
 # ---- build stage ----
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
@@ -16,7 +16,7 @@ RUN pip install --upgrade pip \
     && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # ---- runtime stage ----
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # Security: run as a dedicated non-root user.
 RUN groupadd --gid 1001 appgroup \
