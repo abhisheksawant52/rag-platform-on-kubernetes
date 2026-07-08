@@ -1,0 +1,41 @@
+# Version control / CI
+.git
+.github
+.gitignore
+.gitattributes
+
+# Python caches and artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+# Local env / virtualenvs
+.venv/
+venv/
+.env
+.env.*
+
+# Tests and docs are not needed in the runtime image
+tests/
+docs/
+architecture/
+
+# Infra / deploy assets (built separately)
+helm/
+kubernetes/
+monitoring/
+argocd/
+terraform/
+
+# Editor
+.vscode/
+.idea/
+*.swp

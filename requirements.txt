@@ -1,0 +1,10 @@
+# Runtime dependencies for the rag_platform package.
+# The application code only imports fastapi/uvicorn/pydantic at runtime; the
+# vector-store and embedding client libraries are declared for production
+# deployments that swap in the real backends.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+pydantic-settings>=2.2
+qdrant-client>=1.9
+sentence-transformers>=2.7

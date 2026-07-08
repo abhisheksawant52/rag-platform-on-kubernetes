@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-platform-on-kubernetes"
+version = "0.1.0"
+description = "Production-grade Retrieval-Augmented Generation platform on Kubernetes (FastAPI + Helm + Kustomize + Prometheus/Grafana)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Abhishek Sawant" }]
+keywords = ["rag", "kubernetes", "vector-search", "fastapi", "helm", "llm"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "qdrant-client>=1.9",
+    "sentence-transformers>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "black>=24.0",
+    "pre-commit>=3.7",
+    "httpx>=0.27",
+]
+
+[project.urls]
+Homepage = "https://github.com/abhisheksawant52/rag-platform-on-kubernetes"
+Repository = "https://github.com/abhisheksawant52/rag-platform-on-kubernetes"
+Issues = "https://github.com/abhisheksawant52/rag-platform-on-kubernetes/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]

@@ -103,3 +103,17 @@ affinity: {}
 pdb:
   enabled: true
   minAvailable: 1
+
+# NetworkPolicy restricting pod ingress/egress
+networkPolicy:
+  enabled: true
+  # Restrict ingress to pods in namespaces matching this selector.
+  # Leave empty to allow ingress from any pod in the cluster.
+  ingressNamespaceSelector: {}
+
+# Prometheus Operator ServiceMonitor (requires the Prometheus Operator CRDs)
+serviceMonitor:
+  enabled: false
+  path: /metrics
+  interval: 30s
+  labels: {}

@@ -1,0 +1,23 @@
+# Prometheus Operator ServiceMonitor for the RAG Platform service.
+# Requires the Prometheus Operator CRDs (kube-prometheus-stack) to be installed.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rag-platform
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/part-of: rag-platform
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - rag-production
+      - rag-staging
+  selector:
+    matchLabels:
+      app: rag-platform
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
